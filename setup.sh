@@ -38,10 +38,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# ISO Dosyası Seçimi
-iso_path=$(dialog --stdout --title "ISO Dosya Yolu" --fselect / 14 48)
-if [ -z "$iso_path" ]; then
-  dialog --title "Hata" --msgbox "ISO dosyası seçilmedi. Kurulum iptal edildi." 10 60
+# install.esd Dosyası Seçimi
+esd_path=$(dialog --stdout --title "install.esd Dosya Yolu" --fselect / 14 48)
+if [ -z "$esd_path" ]; then
+  dialog --title "Hata" --msgbox "install.esd dosyası seçilmedi. Kurulum iptal edildi." 10 60
   exit 1
 fi
 
@@ -96,9 +96,8 @@ if [ "$is_uefi" == "UEFI" ]; then
 fi
 
 # Windows İmaj Dosyasını Çıkarma
-wim_path="$iso_path/sources/install.wim"
 dialog --infobox "Windows imaj dosyası çıkarılıyor..." 5 50
-wimlib-imagex apply $wim_path 1 /mnt
+wimlib-imagex apply "$esd_path" 1 /mnt
 
 # GRUB Kurulumu ve Yapılandırma
 (
@@ -119,8 +118,8 @@ wimlib-imagex apply $wim_path 1 /mnt
 cat <<EOF >> /mnt/boot/grub/grub.cfg
 menuentry "Windows 10" {
     insmod part_${is_uefi,,}
-    insmod fat
-    set root='(hd0,${is_uefi,,}1)'
+    insmod ntfs
+    set root='(hd0,${is_uefi,,}2)'
     chainloader +1
 }
 EOF
